@@ -2,7 +2,6 @@ from random import choice as choose
 from os.path import exists
 from random import randint
 import PySimpleGUI as sg
-import PySimpleGUIQt as sgq
 from os import remove
 from ujson import dump, load
 from sys import exit as close_program
@@ -68,6 +67,7 @@ SAVE_FILE = f"{NAME} Save.json"
 CREDITS = """Developer - blabla_lab (H.A)
 GUI Library - PySimpleGUI & PySimpleGUIQt"""
 
+sgq = sg
 
 # settings
 global gradual_difficulty,gradual_difficulty_word_length,show_first_letter,show_last_letter,level,points,points_required_for_level
@@ -298,6 +298,7 @@ while True:
                 if tries == 0:
                     sg.popup_ok(f"You lose\nthe word was:{word}")
                     tries = user_tries
+                    window.close()
                     break
             
 
