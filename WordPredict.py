@@ -1,73 +1,71 @@
+"""
+1.0
+First release
+1.1
+removed qt library
+1.2
+Guessing the same letter wont remove points
+themes setting
+minor code improvments
+losing penalty
+"""
+
+
 from random import choice as choose
 from os.path import exists
 from random import randint
 import PySimpleGUI as sg
 from os import remove
-from ujson import dump, load
+from json import  dump, load
 from sys import exit as close_program
-WORDS = ['gate', 'history', 'stove', 'station', 'verse', 'selection', 'stretch', 'cow', 'kittens', 'rule', 
-'metal', 'heat', 'birthday', 'blade', 'hand', 'walk', 'territory', 'spring', 'afternoon', 'frog', 
-'noise', 'creator', 'bottle', 'toy', 'worm', 'self', 'oven', 'rest', 'purpose', 'limit', 'dirt', 
-'pancake', 'smoke', 'seed', 'army', 'boy', 'friction', 'yard', 'pull', 'country', 'meal', 
-'society', 'aunt', 'girls', 'car', 'observation', 'pail', 'ring', 'scarf', 'trains', 'suggestion', 
-'form', 'pencil', 'coal', 'texture', 'drain', 'receipt', 'liquid', 'deer', 'chalk', 'porter', 
-'statement', 'impulse', 'person', 'business', 'loss', 'trick', 'touch', 'sack', 'cabbage', 
-'wilderness', 'partner', 'competition', 'instrument', 'minute', 'holiday', 'mitten', 
-'morning', 'poison', 'stone', 'hammer', 'end', 'pie', 'knowledge', 'mind', 'dad', 'fire', 
-'morning', 'winter', 'fireman', 'step', 'sticks', 'chin', 'grape', 'can', 'rake', 'spoon', 
-'treatment', 'weather', 'death', 'porter', 'queen', 'tent', 'look', 'bone', 'shelf', 'amount', 
-'bat', 'beds', 'sock', 'advertisement', 'blow', 'chickens', 'wall', 'toothpaste', 'flavor', 
-'noise', 'lake', 'ray', 'fear', 'memory', 'skirt', 'bucket', 'bridge', 'basketball', 'bear', 
-'crook', 'toothbrush', 'cause', 'cover', 'train', 'reaction', 'fuel', 'quill', 'dogs', 'unit', 
-'library', 'chance', 'scent', 'guide', 'committee', 'sign', 'degree', 'slave', 'creature', 
-'advice', 'iron', 'week', 'sofa', 'trade', 'country', 'health', 'shape', 'sneeze', 'wealth', 
-'land', 'tray', 'smoke', 'cave', 'boat', 'stocking', 'person', 'notebook', 'bell', 'rain', 'bit', 
-'actor', 'animal', 'drop', 'throne', 'smash', 'songs', 'appliance', 'sound', 'coach', 'day', 
-'cushion', 'juice', 'month', 'verse', 'thaw', 'arrive', 'attempt', 'employ', 'glow', 'order', 
-'realize', 'mate', 'untidy', 'arrange', 'face', 'complain', 'last', 'milk', 'multiply', 'live', 
-'bat', 'rescue', 'found', 'brake', 'film', 'compete', 'name', 'sip', 'mix', 'count', 'escape', 
-'bump', 'kneel', 'mourn', 'plant', 'join', 'grab', 'rot', 'comb', 'stain', 'shiver', 'store', 
-'bolt', 'beg', 'glue', 'miss', 'remind', 'chase', 'list', 'nail', 'stir', 'offer', 'jail', 
-'imagine', 'interest', 'develop', 'command', 'long', 'reply', 'head', 'applaud', 'divide', 
-'wipe', 'invent', 'attack', 'place', 'compare', 'carve', 'tug', 'allow', 'wander', 'shrug', 
-'melt', 'gaze', 'lick', 'fit', 'unlock', 'flow', 'reject', 'charge', 'supply', 'concern',
-'undress', 'inform', 'wonder', 'provide', 'flower', 'suggest', 'camp', 'wobble', 'smell', 
-'influence', 'wail', 'kick', 'radiate', 'support', 'reduce', 'increase', 'hunt', 'trip', 'moan', 
-'point', 'memorize', 'encourage', 'understanding', 'communication', 'recommendation',
-'administration', 'entertainment', 'responsibility', 'transportation', 'establishment', 
-'differentiate', 'unaccountable', 'knowledgeable', 'disillusioned', 'environmental', 
-'heartbreaking', 'dysfunctional', 'psychological', 'sophisticated', 'lackadaisical', 
-'materialistic', 'administrative', 'overconfident', 'comprehensive', 'scintillating',
-'education', 'sense', 'person', 'apparatus', 'level', 'mind', 'cook', 'twist', 'impulse',
-'night', 'trouble', 'doubt', 'expert', 'profit', 'opinion', 'hour', 'canvas', 'destruction', 
-'stretch', 'smoke', 'soup', 'existence', 'discussion', 'guide', 'limit', 'trick', 'wine', 
-'jelly', 'quality', 'polish', 'stop', 'drink', 'manager', 'cloth', 'sky', 'change', 
-'punishment', 'tax', 'food', 'laugh', 'fall', 'expansion', 'belief', 'support', 'fiction', 
-'slip', 'cork', 'view', 'reason', 'force', 'form', 'bread', 'disgust', 'order', 'page', 
-'building', 'smile', 'part', 'pain', 'competition'"sister","cigarette","cancer","courage","sample","application","writing",
-"aspect","accident","election","client","entertainment","conversation","mom","science","reflection","passenger","inspector","newspaper","instance","complaint",
-"distribution","oven","beer","response","version","two","teaching","resolution","tale","actor",
-"paper","people","guitar","fortune","cousin","stranger","negotiation","celebration","funeral","control","possibility","buyer","climate","president","trainer",
-"investment","significance","week","selection","tag", "shy", "dive","abstract","accept","accelerate","access","accompany","accord","account","accrue","achieve","acknowledge",
-"acquire","act","add","address","adhere","adjust","admit","adopt","administer","admire","adopt","advance","adventurous","advertise","advise","advocate","affair","affect","afford",
-"affiliate","affinity","affirm","affix","afford","afloat","affront","after","afternoon","again","against","age","agenda","agent","agree","agricultural","ahead","aim","air","airplane",
-"alarm","album","alcohol","alert","alien","align","alive","all","allergic","allow","almost","alone","along","aloud","alphabet","already","also","alter","although","always",
-"amazing","ambitious","among","amount","amuse","analyze","ancient","and","angel","anger","angle","angry","animal","announce","annual","anonymous","answer","ant","anxious","any",
-"anybody","anyone","anything","anywhere","apart","apartment","apparent","appeal","appear","appetite","appoint","applause","apple","apply","appreciate","apprehensive","approach",
-"appropriate","approve","approximately","apricot","aquatic","argue","arm","armed","army","around","arrange","arrest","arrive","arrow","art","article","artificial","artist","artistic",
-"arrogant","ashamed","ashamed","asleep","aspect","assemble","assembly","assist","assistant","associate","assume","assure","athlete","atom","attach","attack","attempt","attend","attention",
-"attentive","attitude","attract","attractive","attribute","audio","audit","author","authority","automatic","automobile","autumn","available","average","avoid","awake","award","aware","away",
-"awful","awkward","axe"]
+
+WORDS = ['history', 'station', 'selection', 'stretch', 'kittens', 'birthday', 'territory', 'spring', 'afternoon', 'creator', 'bottle', 'purpose', 'pancake', 'friction', 
+'country', 'society', 'observation', 'trains', 'suggestion', 'pencil', 'texture', 'receipt', 'liquid', 'porter', 'statement', 'impulse', 'person', 'business',
+'cabbage', 'wilderness', 'partner', 'competition', 'instrument', 'minute', 'holiday', 'mitten', 'morning', 'poison', 'hammer', 'knowledge', 'morning', 'winter',
+'fireman', 'sticks', 'treatment', 'weather', 'porter', 'amount', 'chickens', 'toothpaste', 'flavor', 'memory', 'bucket', 'bridge', 'basketball', 'toothbrush', 
+'reaction', 'library', 'chance', 'committee', 'degree', 'creature', 'advice', 'country', 'health', 'sneeze', 'wealth', 'stocking', 'person', 'notebook', 'animal', 
+'throne', 'appliance', 'cushion', 'arrive', 'attempt', 'employ', 'realize', 'untidy', 'arrange', 'complain', 'multiply', 'rescue', 'compete', 'escape', 'shiver', 
+'remind', 'imagine', 'interest', 'develop', 'command', 'applaud', 'divide', 'invent', 'attack', 'compare', 'wander', 'unlock', 'reject', 'charge', 'supply', 'concern', 
+'undress', 'inform', 'wonder', 'provide', 'flower', 'suggest', 'wobble', 'influence', 'radiate', 'support', 'reduce', 'increase', 'memorize', 'encourage', 'education',
+'person', 'apparatus', 'impulse', 'trouble', 'expert', 'profit', 'opinion', 'canvas', 'destruction', 'stretch', 'existence', 'discussion', 'quality', 'polish', 'manager',
+'change', 'punishment', 'expansion', 'belief', 'support', 'fiction', 'reason', 'disgust', 'building', 'cigarette', 'cancer', 'courage', 'sample', 'application', 'writing',
+'aspect', 'accident', 'election', 'client', 'science', 'reflection', 'passenger', 'inspector', 'newspaper', 'instance', 'complaint', 'response', 'version', 'teaching', 
+'resolution', 'people', 'guitar', 'fortune', 'cousin', 'stranger', 'negotiation', 'celebration', 'funeral', 'control', 'possibility', 'climate', 'president', 'trainer', 
+'investment', 'selection', 'abstract', 'accept', 'accelerate', 'access', 'accompany', 'accord', 'account', 'accrue', 'achieve', 'acknowledge', 'acquire', 'address', 
+'adhere', 'adjust', 'administer', 'admire', 'advance', 'adventurous', 'advertise', 'advise', 'advocate', 'affair', 'affect', 'afford', 'affiliate', 'affinity', 'affirm',
+'afford', 'afloat', 'affront', 'afternoon', 'against', 'agenda', 'airplane', 'alcohol', 'allergic', 'almost', 'alphabet', 'already', 'although', 'always', 'amazing', 
+'ambitious', 'amount', 'analyze', 'ancient', 'animal', 'announce', 'annual', 'anonymous', 'answer', 'anxious', 'anybody', 'anyone', 'anything', 'anywhere', 'apartment', 
+'apparent', 'appeal', 'appear', 'appetite', 'appoint', 'applause', 'appreciate', 'approach', 'appropriate', 'approve', 'apricot', 'aquatic', 'around', 'arrange', 
+'arrest', 'arrive', 'article', 'artificial', 'artist', 'artistic', 'arrogant', 'ashamed', 'ashamed', 'asleep', 'aspect', 'assemble', 'assembly', 'assist', 
+'assistant', 'associate', 'assume', 'assure', 'athlete', 'attach', 'attack', 'attempt', 'attend', 'attention', 'attentive', 'attitude', 'attract', 'attractive', 
+'attribute', 'author', 'authority', 'automatic', 'automobile', 'autumn', 'available', 'average', 'awkward', 'advertisement', 'understanding', 'communication',
+'recommendation', 'administration', 'entertainment', 'responsibility', 'transportation', 'establishment', 'differentiate', 'unaccountable', 'knowledgeable', 
+'disillusioned', 'environmental', 'heartbreaking', 'dysfunctional', 'psychological', 'sophisticated', 'lackadaisical', 'materialistic', 'administrative', 
+'overconfident', 'comprehensive', 'scintillating', 'competitionsister', 'entertainment', 'conversation', 'distribution', 'significance', 'agricultural', 
+'apprehensive', 'approximately', 'gate', 'stove', 'verse', 'cow', 'rule', 'metal', 'heat', 'blade', 'hand', 'walk', 'frog', 'noise', 'toy', 'worm', 'self', 
+'oven', 'rest', 'limit', 'dirt', 'smoke', 'seed', 'army', 'boy', 'yard', 'pull', 'meal', 'aunt', 'girls', 'car', 'pail', 'ring', 'scarf', 'form', 'coal', 
+'drain', 'deer', 'chalk', 'loss', 'trick', 'touch', 'sack', 'stone', 'end', 'pie', 'mind', 'dad', 'fire', 'step', 'chin', 'grape', 'can', 'rake', 'spoon',
+'death', 'queen', 'tent', 'look', 'bone', 'shelf', 'bat', 'beds', 'sock', 'blow', 'wall', 'noise', 'lake', 'ray', 'fear', 'skirt', 'bear', 'crook', 
+'cause', 'cover', 'train', 'fuel', 'quill', 'dogs', 'unit', 'scent', 'guide', 'sign', 'slave', 'iron', 'week', 'sofa', 'trade', 'shape', 'land', 
+'tray', 'smoke', 'cave', 'boat', 'bell', 'rain', 'bit', 'actor', 'drop', 'smash', 'songs', 'sound', 'coach', 'day', 'juice', 'month', 'verse', 
+'thaw', 'glow', 'order', 'mate', 'face', 'last', 'milk', 'live', 'bat', 'found', 'brake', 'film', 'name', 'sip', 'mix', 'count', 'bump', 'kneel', 
+'mourn', 'plant', 'join', 'grab', 'rot', 'comb', 'stain', 'store', 'bolt', 'beg', 'glue', 'miss', 'chase', 'list', 'nail', 'stir', 'offer', 'jail',
+'long', 'reply', 'head', 'wipe', 'place', 'carve', 'tug', 'allow', 'shrug', 'melt', 'gaze', 'lick', 'fit', 'flow', 'camp', 'smell', 'wail', 'kick',
+'hunt', 'trip', 'moan', 'point', 'sense', 'level', 'mind', 'cook', 'twist', 'night', 'doubt', 'hour', 'smoke', 'soup', 'guide', 'limit', 'trick', 
+'wine', 'jelly', 'stop', 'drink', 'cloth', 'sky', 'tax', 'food', 'laugh', 'fall', 'slip', 'cork', 'view', 'force', 'form', 'bread', 'order', 'page',
+'smile', 'part', 'pain', 'mom', 'oven', 'beer', 'two', 'tale', 'actor', 'paper', 'buyer', 'week', 'tag', 'shy', 'dive', 'act', 'add', 'admit', 
+'adopt', 'adopt', 'affix', 'after', 'again', 'age', 'agent', 'agree', 'ahead', 'aim', 'air', 'alarm', 'album', 'alert', 'alien', 'align', 'alive', 
+'all', 'allow', 'alone', 'along', 'aloud', 'also', 'alter', 'among', 'amuse', 'and', 'angel', 'anger', 'angle', 'angry', 'ant', 'any', 'apart',
+    'apple', 'apply', 'argue', 'arm', 'armed', 'army', 'arrow', 'art', 'atom', 'audio', 'audit', 'avoid', 'awake', 'award', 'aware', 'away', 'awful', 'axe']
 
 LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
-VERSION = 1.0
+VERSION = 1.2
 NAME = "WordPredict"
 SAVE_FILE = f"{NAME} Save.json"
-CREDITS = """Developer - blabla_lab (H.A)
-GUI Library - PySimpleGUI & PySimpleGUIQt"""
+CREDITS = """Developer - blabla_lab
+GUI Library - PySimpleGUI"""
 
-sgq = sg
 
 # settings
 global gradual_difficulty,gradual_difficulty_word_length,show_first_letter,show_last_letter,level,points,points_required_for_level
@@ -83,9 +81,10 @@ points_required_for_level = 3
 custom_words = []
 
 
+
 def auto_font_size():
-    window.find_element("WORD").update(font=("LCD Solid", window.size[1] // 23 ))
-    window.find_element("Title").update(font=(FONT[0], window.size[1] // 23 ))
+    window.find_element("WORD").update(font=("LCD Solid", window.size[1] // 20 ))
+    window.find_element("Title").update(font=(FONT[0], window.size[1] // 20 ))
 
 
 def save():
@@ -104,9 +103,12 @@ def save():
         dump(save_dictionary, f, indent=1)
 
 
+
 def load_save():
     with open(SAVE_FILE, "r") as f:
         return load(f)
+    
+
 
 if not exists(SAVE_FILE):
     with open(SAVE_FILE, "w"):
@@ -114,16 +116,15 @@ if not exists(SAVE_FILE):
     save()
 
 sg.theme_border_width(3)
-sgq.theme("dark2")
+sg.theme("dark2")
 
 FONT = (None, 18)  
 sg.set_options(font=FONT, element_padding=(10,10), auto_size_text=True, auto_size_buttons=True)
-sgq.set_options(font=FONT, element_padding=(5,5), auto_size_text=True, auto_size_buttons=True)
+sg.set_options(font=FONT, element_padding=(5,5), auto_size_text=True, auto_size_buttons=True)
 
 # sg.theme('SystemDefault')
 
 #load save
-
 try:
     save_dictionary = load_save()
     user_tries=save_dictionary["tries"]
@@ -140,8 +141,10 @@ except (KeyError, FileNotFoundError) as e:
     sg.popup_error(f"deleting save file...\n\nmore info:\n{e}")
     remove(SAVE_FILE)
     close_program("bad save file")
+print("Loaded save file")
 
-sgq.theme("LightGrey3")
+
+# sg.theme("LightGrey3")
 # Custom flat PySimpleGUI Theme.
 # Generated using Themera v1.0.0.
 import PySimpleGUI as sg  # Please change 'sg' to your liking.
@@ -156,24 +159,23 @@ flat_themedict = {'BACKGROUND': '#f1f1f1',
     'SLIDER_DEPTH': 0,
     'PROGRESS_DEPTH': 0}
 
-sg.theme_add_new('flat', flat_themedict)
-sg.theme('flat')
+sg.theme_add_new('default', flat_themedict)
+sg.theme('default')
+print("Applied theme")
 
 
 while True:
-
-        
-
+    print("On while loop")
     tries=user_tries
     bad_letters = []
+    word = choose(WORDS)
 
     if gradual_difficulty:
         while True:
+            print(f"Making up a word...\n\nword:{word}, {type(word)}\ngdwl:{gradual_difficulty_word_length}")
             word = choose(WORDS)
             if not len(word) > gradual_difficulty_word_length:
                 break
-    else:
-        word = choose(WORDS)
 
     word_in_a_list_form = list(word)
     guess_word = []
@@ -192,7 +194,7 @@ while True:
                 [sg.T("Guess a letter:", expand_x=True)],
                 [sg.B(i, expand_x=True, pad=(1,1), expand_y = True) for i in LETTERS[0:14]],
                 [sg.B(i, expand_x=True, pad=(1,1), expand_y = True) for i in LETTERS[14:]],
-                [sg.B("Settings", expand_x=True), sg.B("Shop")]]
+                [sg.B("Settings", expand_x=True)]]
 
     window = sg.Window(NAME, layout, resizable=True).finalize()
 
@@ -205,6 +207,7 @@ while True:
     exit_loop = False
 
     while not exit_loop:
+        print("On nested loop")
         event, values = window.read(1500, timeout_key="-TIMEOUT-")
         
         if event == sg.WIN_CLOSED:
@@ -212,24 +215,25 @@ while True:
             close_program()
         elif event == "Settings":
             settings_layout = [
-                [sgq.T("Settings")],
-                [sgq.Checkbox("gradual difficulty", key="gd", default=gradual_difficulty, 
+                [sg.T("Settings")],
+                [sg.Checkbox("gradual difficulty", key="gd", default=gradual_difficulty, 
                               tooltip="this mode will give you words\nbased on your level, for example\nlevel 1 will give you words ranging\nfrom 3-4 letters of length"), 
-                              sgq.T(f"Gradual diffculty max word length:{gradual_difficulty_word_length}",
+                              sg.T(f"Gradual diffculty max word length:{gradual_difficulty_word_length}",
                                     tooltip="this tells you the number of letters long words can come, based on level")],
                 
-                [sgq.Checkbox("show first letter", key="sf", default=show_first_letter)],
-                [sgq.Checkbox("show last letter", key="sl", default=show_last_letter)],
-                [sgq.T("Tries:"), sgq.In(user_tries, key="tries")],
-                [sgq.B("Add new word"), sgq.B("Credits"), sgq.B("view words"), sgq.B("Delete save")], 
-                [sgq.OK(), sgq.T("the game will restart to apply changes!")]
+                [sg.Checkbox("show first letter", key="sf", default=show_first_letter)],
+                [sg.Checkbox("show last letter", key="sl", default=show_last_letter)],
+                [sg.T("Tries:"), sg.In(user_tries, key="tries")],
+                [sg.T("Themes"), sg.Listbox(["default", "Dark2", "Black", "SystemDefault", "RAnDOm"], default_values=sg.theme(), select_mode=sg.LISTBOX_SELECT_MODE_SINGLE, key="-THEME-")],
+                [sg.B("Add new word"), sg.B("Credits"), sg.B("view words"), sg.B("Delete save")], 
+                [sg.OK(), sg.T("the game will restart to apply changes!")]
             ]
-            settings_window = sgq.Window("Settings", settings_layout)
+            settings_window = sg.Window("Settings", settings_layout)
             while True:
                 se, sv = settings_window.read()
                 invalid = False
-                if se == sgq.WIN_CLOSED: 
-                    sgq.popup_quick_message("Didnt save settings")
+                if se == sg.WIN_CLOSED: 
+                    sg.popup_quick_message("Didnt save settings")
                     break
                 elif se == "Add new word":
                     user_custom_word = sg.popup_get_text("Type a word you want to\nadd to the word base:", title="add", background_color="Dark Gray")
@@ -239,7 +243,7 @@ while True:
                         print(i)
                         if not i in LETTERS or user_custom_word in WORDS:
                             invalid = True
-                            sgq.popup_ok("your word contained something thats not a letter.\nor your word already exists in the words base.", title="error")
+                            sg.popup_ok("your word contained something thats not a letter.\nor your word already exists in the words base.", title="error")
                             break
                     if invalid:
                         continue
@@ -252,15 +256,18 @@ while True:
                     show_first_letter = sv["sf"]
                     show_last_letter = sv["sl"]
                     user_tries = int(sv["tries"])
+                    sg.theme("".join(sv["-THEME-"]))
+                    sg.theme_border_width(0)
                     save()
+                    window.close()
 
                     exit_loop=True
                     break
                 
                 elif se == "Credits":
-                    sgq.popup_no_buttons(f"{NAME} {VERSION}\n\nCredits:\n{CREDITS}\n\nOther:\nWords in the game's dictionary:{len(WORDS)}", title="Credits")
+                    sg.popup_no_buttons(f"{NAME} {VERSION}\n\nCredits:\n{CREDITS}\n\nOther:\nWords in the game:{len(WORDS)}", title="Credits")
                 elif se == "view words":
-                    sgq.popup_scrolled(WORDS, title="words base")
+                    sg.popup_scrolled(",".join(WORDS), title="words base")
                 elif se == "Delete save":
                     confirm = sg.popup_get_text("ARE YOU SURE YOU WANT TO DELETE YOUR SAVE FILE\nALL OF YOUR PROGRESS WILL BE LOST!\nTO CONFIRM TYPE THIS SENTENCE:\nI AM SURE THAT I WANT TO DELETE MY SAVE FILE\n", title="Confirm")
                     if confirm == "I AM SURE THAT I WANT TO DELETE MY SAVE FILE":
@@ -273,11 +280,6 @@ while True:
             save()
             auto_font_size()
             continue
-        elif event == "Shop":
-            shop_layout = [
-                [sg.T("Shop")],
-
-            ]
 
 
         #* the checking section *#
@@ -292,8 +294,10 @@ while True:
         # check if guess is wrong
         if not guess in word_in_a_list_form:
             if guess not in bad_letters:
-                # sgq.popup_quick_message("Wrong.", auto_close_duration=0.5, non_blocking=False)
+                # sg.popup_quick_message("Wrong.", auto_close_duration=0.5, non_blocking=False)
                 tries -= 1
+                points -= 1
+                bad_letters.append(guess)
                 window.find_element("t").update(f"Tries:{tries}")
                 if tries == 0:
                     sg.popup_ok(f"You lose\nthe word was:{word}")
