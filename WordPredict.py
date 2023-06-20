@@ -13,19 +13,29 @@ sounds
 icons
 fixed penalty bug
 modifed level system
+1.4
+Old save files will now be compatible with new versions
+Theme setting uses a dropdown
+More Themes
+Few more words
+Settings now uses a icon
+Minor code optimizations
+Better error messages
+Win popup will not ask user to play again
+window now sves location
+Minor other changes
+
 """
 
 
+
 from random import choice as choose
-from os.path import exists
 from playsound import playsound
-from random import randint
 import PySimpleGUI as sg
 from os import remove
-from os.path import exists
+from os.path import exists,abspath
 from json import  dump, load
 from sys import exit as close_program
-import gc
 
 SPEAKER_ICON = b"iVBORw0KGgoAAAANSUhEUgAAAA0AAAAOCAYAAAD0f5bSAAABAElEQVQokY2SO04DMRRFz5s2ElISUriYCsICRtBMAz0sA3YAqwg7SJYRemjSgCIahICAkFK4mJCRIqZ+NOOR52MJN5av3/H1+8hkOsdfN1cXAKiqkxQQABEBIPIuFGAynTcBf69BVVBsBqztTyuwBqXJmNgMxAlru9XYDIMAgJRf0cXyXRbLjyr4+vK8FevnpABpcqRpMq4cb2d3QadaTv8Fo4enz5oQAt++bLeTe6ALfH79xvVUXlaWLC8UwOzvid3s9PT4AIBmcSibHGV54Q5iNztG/Z6EHCmL5gsA3D+uGPV7ZHkRdGxOBGcnh2R50XL0B6AFdYHZ9ldiM6zS+AP+PHyWOxSTEQAAAABJRU5ErkJggg=="
 SAVE_ICON = b"iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAsUlEQVRIie2WrQ/CMBBH3xEcCkEyXzeN518HDRY3NAKBQh9mS0o3klLaHiF7rqIfv767tKKq9CjA4XQhht3WvYzDeZv1SgBa1wAgIgAsolbPyJI+WW5a1wzrCsBwk9UT1thQ8W7RxGESsdXsoWCQUNRrRJ+EBMC4P0N+J2Ep7Ks01d07Qqf1He6PnU6dpBSzw+yMEpZ2aZ9wdvgtf/mnsd1Qzt0VgNv98dG7mOBawCDhE0JcNSfHRvXqAAAAAElFTkSuQmCC"
@@ -69,7 +79,8 @@ WORDS = ['history', 'station', 'selection', 'stretch', 'kittens', 'birthday', 't
 'smile', 'part', 'pain', 'mom', 'oven', 'beer', 'two', 'tale', 'actor', 'paper', 'buyer', 'week', 'tag', 'shy', 'dive', 'act', 'add', 'admit', 
 'adopt', 'adopt', 'affix', 'after', 'again', 'age', 'agent', 'agree', 'ahead', 'aim', 'air', 'alarm', 'album', 'alert', 'alien', 'align', 'alive', 
 'all', 'allow', 'alone', 'along', 'aloud', 'also', 'alter', 'among', 'amuse', 'and', 'angel', 'anger', 'angle', 'angry', 'ant', 'any', 'apart',
-    'apple', 'apply', 'argue', 'arm', 'armed', 'army', 'arrow', 'art', 'atom', 'audio', 'audit', 'avoid', 'awake', 'award', 'aware', 'away', 'awful', 'axe']
+'apple', 'apply', 'argue', 'arm', 'armed', 'army', 'arrow', 'art', 'atom', 'audio', 'audit', 'avoid', 'awake', 'award', 'aware', 'away', 'awful', 'axe',
+"big"]
 
 LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
@@ -82,7 +93,7 @@ SOUNDS = {"click":"WordPredict/sfx/click.wav",
 
 
 
-VERSION = 1.3
+VERSION = 1.4
 NAME = "WordPredict"
 SAVE_FILE = f"{NAME} Save.json"
 CREDITS = """Developer - blabla_lab
@@ -91,8 +102,7 @@ Icons       - Lucid V1.2 on itch.io
 Sounds      - Nathan Gibson
 """
 
-
-# settings
+#! DEFAULT VALUES
 global gradual_difficulty,gradual_difficulty_word_length,show_first_letter,show_last_letter,level,points,points_required_for_level
 gradual_difficulty = True
 gradual_difficulty_word_length = 3
@@ -104,6 +114,9 @@ user_tries = 6
 tries=user_tries
 points_required_for_level = 3
 custom_words = []
+SOUNDS_ENABLED = True
+theme = "WordPredict"
+#! END DEFAULT VALUES
 
 
 
@@ -113,6 +126,7 @@ def auto_font_size():
 
 
 def save():
+    global save_dictionary
     with open(SAVE_FILE, "w") as f:
         save_dictionary = {
             "gradual_difficulty": gradual_difficulty,
@@ -124,7 +138,9 @@ def save():
             "tries": user_tries,
             "custom_words": custom_words,
             "points_required_for_level": points_required_for_level,
+            "SOUNDS_ENABLED":SOUNDS_ENABLED,
             "SOUNDS": SOUNDS,
+            "theme": theme,
         }
         dump(save_dictionary, f, indent=1)
 
@@ -145,56 +161,145 @@ if not exists(SAVE_FILE):
     save()
 
 sg.theme_border_width(3)
-sg.theme("dark2")
 
 FONT = (None, 18)  
 sg.set_options(font=FONT, element_padding=(5,5), auto_size_text=True, auto_size_buttons=True, icon=ICON)
 
-# sg.theme('SystemDefault')
+sg.theme('TealMono')
 
-#load save
+#! load save
 try:
-    save_dictionary = load_save()
-    user_tries=save_dictionary["tries"]
-    gradual_difficulty = save_dictionary["gradual_difficulty"]
-    gradual_difficulty_word_length = save_dictionary["gradual_difficulty_word_length"]
-    show_first_letter = save_dictionary["show_first_letter"]
-    show_last_letter = save_dictionary["show_last_letter"]
-    level = save_dictionary["level"]
-    points = save_dictionary["points"]
+    load_dictionary = load_save()
+    #! variables to load
+    user_tries=load_dictionary["tries"]
+    gradual_difficulty = load_dictionary["gradual_difficulty"]
+    gradual_difficulty_word_length = load_dictionary["gradual_difficulty_word_length"]
+    show_first_letter = load_dictionary["show_first_letter"]
+    show_last_letter = load_dictionary["show_last_letter"]
+    level = load_dictionary["level"]
+    points = load_dictionary["points"]
+    points_required_for_level = load_dictionary["points_required_for_level"]
+    SOUNDS_ENABLED = load_dictionary["SOUNDS_ENABLED"]
+    SOUNDS = load_dictionary["SOUNDS"]
+    theme = load_dictionary["theme"]
+
+
+    #! checks for bad values
     if points < 0: raise KeyError("Points must be equal or greater than 0")
-    for i in save_dictionary["custom_words"]:
+    for i in load_dictionary["custom_words"]:
         WORDS.append(i)
-    points_required_for_level = save_dictionary["points_required_for_level"]
-    SOUNDS = save_dictionary["SOUNDS"]
-except (KeyError, FileNotFoundError) as e:
-    sg.popup_error(f"deleting save file...\n\nmore info:\n{e} was not found")
-    remove(SAVE_FILE)
-    close_program("bad save file")
+except FileNotFoundError:sg.popup_error("Save file deleted while loading", keep_on_top=True)
+except KeyError as e:
+    exit_loop = False
+    while not exit_loop:
+        u = sg.popup(
+f"""Save file used: {abspath(SAVE_FILE)}
+There is an error in the save file
+it happened because
+{e} key was not found.
+There are 2 solutions to this error:
+1. Delete the save file(PROGRESS WILL BE LOST)
+2. Try to make save compatible with this version (RECOMMENDED)
+""", title="Error", image=SAVE_ICON, keep_on_top=True, icon=SAVE_ICON, custom_text=("1","2"))
+        if u == "2":
+            #! Dont forget to add support for older saves
+            """How to:
+            lets say you made a new feature which required a new key
+            in order to save the progress of the player like shop feature,
+            thats no problem for new players as they will have no progress 
+            and will start the game without a previous save file. But what 
+            about the player who are playing the version before? If they played
+            the new version with the same save file the game will give them an error
+            saying that there is a missing key. So what can you do? 
+            
+            The first step (making sure you made a proper save key):
+                1a.make sure that key being saved has a default value, you can assign
+                a default value by goin to the top and serching for a comment called 
+                #! default value
+                under this comment is some variables with their default values
+                for example the defualt value for level is 1.
+                
+                1b.after assigning a default value, you should inlude this value in the save function
+                got the save() function. In the dictionary type you variable name in strings as a key
+                for the dictionary, and for the value, it should be the variable name.
+                example: save_dictionary["level"] : level
+
+                1c.finally you should make sure your variable is being loaded when the game launches.
+                go to the comment #!load save
+                which is above, and then inside it go under the comment 
+                #! variables to load
+                now type the variable name and set its value to save_dictionary[<NAME>]
+                replace <NAME> with the name of the variable you want to load and make sure the 
+                name is between quotes.
+            The second step (make sure its compatible):
+                2a.go to the comment #! COMPATIBLITY LISTS.
+                type your variable name in qoutation marks as a key and its default value as a value
+                example: "level" : 1
+            
+            Thats it!"""
+
+            #! COMPATIBLITY LISTS
+            # Variable name in strings as a key, for the value it should be its default value
+            SAVE_KEYS =  {"gradual_difficulty_word_length":3, 
+                            "level":1, 
+                            "tries":6 ,
+                            "points":0, 
+                            "points_required_for_level":3,
+                            "show_first_letter":True,
+                            "show_last_letter":True,
+                            "gradual_difficulty":True,
+                            "SOUNDS_ENABLED":True,
+                            "custom_words":[],
+                            "SOUNDS":{"click": "WordPredict/sfx/click.wav","guess_correct": "WordPredict/sfx/guess_correct.wav","guess_wrong": "WordPredict/sfx/guess_wrong.wav","levelup": "WordPredict/sfx/levelup.wav","word_done": "WordPredict/sfx/word_done.wav","word_fail": "WordPredict/sfx/word_fail.wav"},
+                            "theme":"WordPredict"
+                            }
+
+            print(SAVE_KEYS)
+            for i in SAVE_KEYS.keys():
+                if not str(e) == i:
+                    continue
+                try:exec(f"{str(e)} = {SAVE_KEYS[i]}", globals(), locals)
+                except Exception as e: 
+                    sg.popup_error(str(e), keep_on_top=True)
+                    close_program(1)
+                finally:
+                    exit_loop = True
+                    break
+            save()
+            sg.popup("Restart program to load save", keep_on_top=True)
+            close_program(0)
+            
+
+
+
+
+
+
+        elif u == "1":
+            u = sg.popup_yes_no("Are You sure do you want to delete the save file?\nwhy not try the second option?\nits much better\n\nanyway, do i delete the save file?", keep_on_top=True)
+            if u == "Yes": 
+                remove(SAVE_FILE)
+                sg.popup("Save file deleted\nrestart game")
+                close_program()
+            else:continue
+        else:
+            close_program()
+
+
+
+
 print("Loaded save file")
+#! end of load save
+
+
+
+
 
 
 # sg.theme("LightGrey3")
 # PySimpleGUI Theme.
 # Generated using Themera v1.0.0., v 2.0.0
-sg.theme_add_new(
-    'Dark', 
-    {
-        'BACKGROUND': 'black', 
-        'TEXT': '#a4daff', 
-        'INPUT': '#c8c8c8', 
-        'TEXT_INPUT': 'black', 
-        'SCROLL': '#a4daff', 
-        'BUTTON': ('black', '#a4daff'), 
-        'PROGRESS': ('#13406c', '#a4daff'), 
-        'BORDER': 0, 
-        'SLIDER_DEPTH': 0, 
-        'PROGRESS_DEPTH': 0, 
-    })
-
-
-
-sg.theme_add_new('default', 
+sg.theme_add_new('WordPredict', 
     {'BACKGROUND': '#f1f1f1',
     'TEXT': 'black',
     'INPUT': '#c8c8c8',
@@ -205,7 +310,79 @@ sg.theme_add_new('default',
     'BORDER': 0,
     'SLIDER_DEPTH': 0,
     'PROGRESS_DEPTH': 0})
-sg.theme('default')
+
+
+sg.theme_add_new(
+    'WordPredictDarkGreen', 
+    {
+        'BACKGROUND': 'black', 
+        'TEXT': '#ffffff', 
+        'INPUT': '#c8c8c8', 
+        'TEXT_INPUT': 'black', 
+        'SCROLL': '#36ff83', 
+        'BUTTON': ('black', '#36ff83'), 
+        'PROGRESS': ('#36ff83', '#005320'), 
+        'BORDER': 0, 
+        'SLIDER_DEPTH': 0, 
+        'PROGRESS_DEPTH': 0, 
+    })
+
+
+sg.theme_add_new("WordPredictDarkRed",  {'BACKGROUND': '#111111',
+    'TEXT': 'white',
+    'INPUT': '#888888',
+    'TEXT_INPUT': '#black',
+    'SCROLL': '#a0a0a0',
+    'BUTTON': ('white', '#ff4444'),
+    'PROGRESS': ('#ff4444', '#420000'),
+    'BORDER': 0,
+    'SLIDER_DEPTH': 0,
+    'PROGRESS_DEPTH': 0})
+
+
+sg.theme_add_new("WordPredictDark",  {'BACKGROUND': '#111111',
+    'TEXT': 'white',
+    'INPUT': '#888888',
+    'TEXT_INPUT': 'white',
+    'SCROLL': '#a0a0a0',
+    'BUTTON': ('white', '#42b4ff'),
+    'PROGRESS': ('#42b4ff', '#222222'),
+    'BORDER': 0,
+    'SLIDER_DEPTH': 0,
+    'PROGRESS_DEPTH': 0})
+
+sg.theme_add_new(
+    'WordPredictGreen', 
+    {
+        'BACKGROUND': '#f1f1f1', 
+        'TEXT': '#000000', 
+        'INPUT': '#c8c8c8', 
+        'TEXT_INPUT': 'black', 
+        'SCROLL': '#36ff83', 
+        'BUTTON': ('black', '#36ff83'), 
+        'PROGRESS': ('#36ff83', '#b3ffd0'), 
+        'BORDER': 0, 
+        'SLIDER_DEPTH': 0, 
+        'PROGRESS_DEPTH': 0, 
+    })
+
+
+sg.theme_add_new("WordPredictRed",  {'BACKGROUND': '#f1f1f1',
+    'TEXT': '#000000',
+    'INPUT': '#c8c8c8',
+    'TEXT_INPUT': 'black',
+    'SCROLL': '#a0a0a0',
+    'BUTTON': ('white', '#ff4444'),
+    'PROGRESS': ('#ff4444', '#ff9d9d'),
+    'BORDER': 0,
+    'SLIDER_DEPTH': 0,
+    'PROGRESS_DEPTH': 0})
+
+
+
+
+RECOMMENDED_THEMES = ["WordPredict", "WordPredictDark", "WordPredictDarkRed", "WordPredictDarkGreen", "WordPredictGreen", "WordPredictRed"]
+sg.theme(theme)
 print("Applied theme")
 
 
@@ -238,7 +415,7 @@ while True:
                 [sg.T("Sounds List:")],
             ]
             for i in list(SOUNDS.keys()):
-                sound_manager_layout.append([sg.T(i), sg.In(SOUNDS[i], key=i), sg.FileBrowse()])
+                sound_manager_layout.append([sg.T(i, expand_x=True), sg.In(SOUNDS[i], key=i), sg.FileBrowse(), sg.T("Valid path" if exists(SOUNDS[i]) else "Invalid Path", text_color = "Black" if exists(SOUNDS[i]) else "Red")])
             sound_manager_layout.append([sg.OK(), sg.B("Continue without sounds")])
             sound_manager = sg.Window("Sounds", sound_manager_layout, icon=SPEAKER_ICON)
             sme,smv = sound_manager.read(close=True)
@@ -248,6 +425,8 @@ while True:
                 SOUNDS_ENABLED = True
                 if sg.popup_yes_no("Changed sounds directory\nrun a test?", title="Sounds") == "Yes":
                     run_sound_check()
+            elif sme == "Refresh Paths":
+                continue
             else:
                 SOUNDS_ENABLED = False
                 sg.popup_quick_message("Failed to change sounds directory")
@@ -255,13 +434,12 @@ while True:
         else:break
     else:break
 
-gc.collect()
 
 # end of sound checks
 
 
 
-
+window_position = None
 
 while True:
     print("On while loop")
@@ -294,22 +472,30 @@ while True:
                 [sg.B(i, expand_x=True, pad=(1,1), expand_y = True) for i in LETTERS[0:14]],
                 [sg.B(i, expand_x=True, pad=(1,1), expand_y = True) for i in LETTERS[14:]],
                 [sg.B("Settings", expand_x=True)]]
+    
 
     window = sg.Window(NAME, layout, resizable=True).finalize()
-
+    
     window.set_min_size((534, 346))
 
-    window.find_element("-PR-").update(points, points_required_for_level)
+    if window_position is None:
+        window.move_to_center()
+    else:
+        window.move(window_position[0], window_position[1])
 
+    window.find_element("-PR-").update(points, points_required_for_level)
+   
     auto_font_size()
 
     exit_loop = False
 
     while not exit_loop:
-        print("On nested loop")
         # event, values = window.read(1500, timeout_key="-TIMEOUT-")
         event, values = window.read()
         play_sound("click")
+        save()
+        auto_font_size()
+        
 
         
         if event == sg.WIN_CLOSED:
@@ -317,21 +503,21 @@ while True:
             close_program()
         elif event == "Settings":
             settings_layout = [
-                [sg.T("Settings")],
-                [sg.Checkbox("gradual difficulty", key="gd", default=gradual_difficulty, 
+                [sg.Image(GEAR_ICON),sg.T("Settings")],
+                [sg.Checkbox("Gradual difficulty", key="gd", default=gradual_difficulty, 
                               tooltip="this mode will give you words\nbased on your level, for example\nlevel 1 will give you words ranging\nfrom 3-4 letters of length"), 
                               sg.T(f"Gradual diffculty max word length:{gradual_difficulty_word_length}",
                                     tooltip="this tells you the number of letters long words can come, based on level")],
                 
-                [sg.Checkbox("show first letter", key="sf", default=show_first_letter)],
-                [sg.Checkbox("show last letter", key="sl", default=show_last_letter)],
+                [sg.Checkbox("Show first letter", key="sf", default=show_first_letter)],
+                [sg.Checkbox("Show last letter", key="sl", default=show_last_letter)],
+                [sg.Checkbox("Sounds", k="sounds", default=SOUNDS_ENABLED), sg.B("Test sound")],
                 [sg.T("Tries:"), sg.In(user_tries, key="tries")],
-                [sg.T("Themes"), sg.Listbox(["default", "Dark default"], default_values=sg.theme(), select_mode=sg.LISTBOX_SELECT_MODE_SINGLE, key="-THEME-")],
-                [sg.B("Test sound")],
-                [sg.B("Add new word"), sg.B("Credits"), sg.B("view words"), sg.B("Delete save")], 
+                [sg.T("Themes"), sg.DropDown(RECOMMENDED_THEMES, default_value=sg.theme(), key="-THEME-", readonly=True)],
+                [sg.B("Add new word"), sg.B("Credits"), sg.B("View words"), sg.B("Delete save")], 
                 [sg.OK(), sg.T("the game will restart to apply changes!")]
             ]
-            settings_window = sg.Window("Settings", settings_layout)
+            settings_window = sg.Window("Settings", settings_layout, icon = GEAR_ICON)
             while True:
                 se, sv = settings_window.read()
                 play_sound("click")
@@ -359,8 +545,10 @@ while True:
                     gradual_difficulty = sv["gd"]
                     show_first_letter = sv["sf"]
                     show_last_letter = sv["sl"]
+                    SOUNDS_ENABLED = bool(sv["sounds"])
                     user_tries = int(sv["tries"])
-                    sg.theme("".join(sv["-THEME-"]))
+                    theme = "".join(sv["-THEME-"])
+                    sg.theme(theme)
                     sg.theme_border_width(0)
                     save()
                     window.close()
@@ -372,9 +560,11 @@ while True:
                     sg.popup_ok("Click ok to start", title="test sound", image=SPEAKER_ICON)
                     run_sound_check()
                 elif se == "Credits":
-                    sg.popup_no_buttons(f"{NAME} {VERSION}\n\nCredits:\n{CREDITS}\n\nOther:\nWords in the game:{len(WORDS)}", title="Credits")
+                    e,v = sg.Window("Credits", [[sg.Text(f"{NAME} {VERSION}\n\nCredits:\n{CREDITS}\n\nOther:\nWords in the game:{len(WORDS)}", expand_x=True, expand_y=True,auto_size_text=True)]], resizable=True).read(close=True)
+                    if e == sg.WIN_CLOSED:
+                        continue
                     play_sound("click")
-                elif se == "view words":
+                elif se == "View words":
                     sg.popup_scrolled(", ".join(WORDS), title="words base")
                     play_sound("click")
                 elif se == "Delete save":
@@ -395,13 +585,14 @@ while True:
 
                         sg.popup_ok("DELETED SAVE FILE\n\nrestart game to apply changes")
                         play_sound("click")
+
             settings_window.close()
             continue
+
                
-        elif event == "-TIMEOUT-":
-            save()
-            auto_font_size()
-            continue
+        # elif event == "-TIMEOUT-":
+            
+        #     continue
 
 
         #* the checking section *#
@@ -421,12 +612,15 @@ while True:
                 tries -= 1
                 bad_letters.append(guess)
                 window.find_element("t").update(f"Tries:{tries}")
-                if tries == 0:
+                if tries == 0: # the player lost
                     points -= 1
                     play_sound("word_fail")
                     sg.popup_ok(f"You lose\nthe word was:{word}")
+                    sg.popup_quick_message("-1 point", auto_close_duration=1)
                     tries = user_tries
+                    window_position = window.current_location()
                     window.close()
+                    
                     break
             
 
@@ -444,9 +638,11 @@ while True:
 
 
         if guess_word == word_in_a_list_form:
+            window_position = window.current_location()
             window.close()
             play_sound("word_done")
             points += 1
+            sg.popup_quick_message("+1 point", auto_close_duration=1)
             if points >= points_required_for_level:
                 sg.popup_quick_message(f"Level up, Your now on level {level}", title="level up")
                 play_sound("levelup")
@@ -455,13 +651,11 @@ while True:
                 gradual_difficulty_word_length += 1
             
             save()
-            u = sg.popup_yes_no(f"You won!\nThe word was {word}.\nDo you want to play again?", title="WON!")
 
-            if u == "Yes":
-                exit_loop = True
-                break
-            else:
-                close_program("user didnt want to play again")
+            u = sg.popup_quick_message(f"You won!\nThe word was {word}.", title="WON!", non_blocking=False, auto_close_duration=1.6)
+
+            exit_loop = True
+            break
 
         window.find_element("WORD").update(" ".join(guess_word))
 
