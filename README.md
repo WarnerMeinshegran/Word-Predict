@@ -23,6 +23,6 @@ to make sure you also have tkinter
 ```pyinstaller -F -w WordPredict.py```
 8. when it finished the application should be in the dist folder
 ## Credits
-I made this game in python using PYSIMPLEGUI library
-
-
+Developer - blabla_lab
+GUI Library - PySimpleGUI
+Sounds      - Nathan Gibson
