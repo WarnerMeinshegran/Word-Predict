@@ -4,7 +4,7 @@ A game where you guess a word that is choosen randomly.
 ## Installing
 ### Installing from already compiled binaries
 go to releases and click on assests then choose the binary type for you os.  
-windows > exe
+windows > exe   
 linux > appimage
 ### compiling from source code
 NOTE: this project uses python 3.10.6  
